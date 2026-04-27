@@ -1,0 +1,27 @@
+name: Build and Deploy on Self-Hosted Runner
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Stop old container if running
+        run: |
+          docker stop score-predictor || true
+          docker rm score-predictor || true
+
+      - name: Build Docker image
+        run: docker build -t score-predictor:latest .
+
+      - name: Run container
+        run: docker run -d -p 5000:5000 --name score-predictor score-predictor:latest
+
+      - name: Show running containers
+        run: docker ps
